@@ -25,7 +25,7 @@ pipeline {
                     for i in $(seq 1 $COMMIT_COUNT)
                     do
                         echo "hello" >> test.txt  
-                        git config user.name "tommasaurus"
+                        git config user.name "ronishdua"
                         git config user.email "${GITHUB_EMAIL}"
                         git checkout main
                         git pull
@@ -35,7 +35,7 @@ pipeline {
 
 
                     # Push all commits at once
-                    git push https://$GITHUB_TOKEN@github.com/tommasaurus/jenkins-automation.git
+                    git push https://$GITHUB_TOKEN@github.com/ronishdua/jenkinsML.git
 
                     echo "success"
                     '''
