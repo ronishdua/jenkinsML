@@ -7,7 +7,7 @@ pipeline {
         GITHUB_EMAIL = credentials('GITHUB_EMAIL')
     }
     stages {
-
+        stage('Commit and Push to Git')
             steps {
                 script {
                     sh """
