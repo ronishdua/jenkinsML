@@ -1,54 +1,74 @@
 pipeline {
-    agent {        
-        label 'git_agent'                   
-    }
-    environment {
-        GITHUB_TOKEN = credentials('GITHUB_TOKEN')
-        GITHUB_EMAIL = credentials('GITHUB_EMAIL')
-    }
-    stages {
-        stage('first stage') {
-            steps {
-                script {
-                    sh """
-                        echo GITHUB_TOKEN
-                        echo GITHUB_EMAIL                      
-                    """
-                }
-            }
-        }
-        stage('Commit and Push to Git') {
-            steps {                
-                script {
-                    sh '''                    
-                    COMMIT_COUNT=$(shuf -i 1-7 -n 1)                    
-                                                                                
-                    for i in $(seq 1 $COMMIT_COUNT)
-                    do
-                        echo "hello" >> test.txt  
-                        git config user.name "ronishdua"
-                        git config user.email "${GITHUB_EMAIL}"
-                        git checkout main
-                        git pull
-                        git add test.txt
-                        git commit -m "commit $i"
-                    done
-
-
-                    # Push all commits at once
-                    git push https://$GITHUB_TOKEN@github.com/ronishdua/jenkinsML.git
-
-                    echo "success"
-                    '''
-                }
-            }
-        }
-    }    
-    post {
-        always {
-            script {
-                cleanWs()
-            }
-        }
-    }
+   agent {        
+       label 'git_agent'                   
+   }
+   environment {
+       GITHUB_TOKEN = credentials('GITHUB_TOKEN')
+       GITHUB_EMAIL = credentials('GITHUB_EMAIL')
+   }
+   stages {
+       stage('first stage') {
+           steps {
+               script {
+                   sh """
+                       echo GITHUB_EMAIL                      
+                   """
+               }
+           }
+       }
+       stage('Commit and Push to Git') {
+           steps {                
+               script {
+                   sh '''
+                   COMMIT_COUNT=$(shuf -i 1-7 -n 1)
+                   
+                   git config user.name "ronishdua"
+                   git config user.email "${GITHUB_EMAIL}"
+                   git checkout main
+                   
+                   for i in $(seq 1 $COMMIT_COUNT)
+                   do
+                       git pull --rebase
+                       
+                       echo "// ML Pipeline Update - $(date)" >> ml.txt
+                       echo "# Import key libraries" >> ml.txt
+                       echo "import torch" >> ml.txt
+                       echo "import tensorflow as tf" >> ml.txt
+                       echo "from transformers import AutoModel, AutoTokenizer" >> ml.txt
+                       echo "" >> ml.txt
+                       echo "# Load and preprocess data" >> ml.txt
+                       echo "dataset = load_dataset('company/custom-data-v2')" >> ml.txt
+                       echo "tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')" >> ml.txt
+                       echo "" >> ml.txt
+                       echo "# Model configuration" >> ml.txt
+                       echo "config = {'learning_rate': 2e-5," >> ml.txt
+                       echo "'batch_size': 32," >> ml.txt
+                       echo "'epochs': 100}" >> ml.txt
+                       echo "" >> ml.txt
+                       echo "# Training loop" >> ml.txt
+                       echo "model.fit(X_train, y_train, **config)" >> ml.txt
+                       echo "accuracy = model.evaluate(X_test, y_test)[1]" >> ml.txt
+                       echo "" >> ml.txt
+                       echo "# Save checkpoints" >> ml.txt
+                       echo "torch.save(model.state_dict(), f'model_v${i}.pth')" >> ml.txt
+                       echo "wandb.log({'accuracy': accuracy, 'loss': history.history['loss'][-1]})" >> ml.txt
+                       echo "print(f'Training completed - Accuracy: {accuracy:.4f}')" >> ml.txt
+                       echo "" >> ml.txt
+                       
+                       git add ml.txt
+                       git commit -m "feat: update ML pipeline parameters - v${i}"
+                       git push https://$GITHUB_TOKEN@github.com/ronishdua/jenkinsML.git
+                   done
+                   '''
+               }
+           }
+       }
+   }    
+   post {
+       always {
+           script {
+               cleanWs()
+           }
+       }
+   }
 }
